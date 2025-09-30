@@ -1,10 +1,10 @@
 import pymysql.cursors
 
 DB_CONFIG = {
-    'host': 'mysql-34862870-votesystemdb.d.aivencloud.com',
-    'port': 18174,
+    'host': 'avinadmin-projectgolf.l.aivencloud.com',
+    'port': 19352,
     'user': 'avnadmin',
-    'password': 'AVNS_b3_dQyjHYxArg-NPLkF',
+    'password': 'AVNS_28wv3Z_whXVARBbtZ-W',
     'db': 'defaultdb',  # default database
     'charset': 'utf8mb4',
     'cursorclass': pymysql.cursors.DictCursor,
