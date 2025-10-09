@@ -5,7 +5,7 @@ DB_CONFIG = {
     'port': 19352,
     'user': 'avnadmin',
     'password': 'AVNS_28wv3Z_whXVARBbtZ-W',
-    'db': 'defaultdb', 
+    'db': 'mydb', 
     'charset': 'utf8mb4',
     'cursorclass': pymysql.cursors.DictCursor,
     'autocommit': True,
