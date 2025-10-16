@@ -170,3 +170,4 @@ https://trello.com/invite/b/68d37c7a355d2c21c36e3bcc/ATTI35f812121433e0aeffd617d
 Meeting time to be decided to track progress once every week.
 
 -- Note to team members: If you guys need any help or confused on anything just reach out to me.
+
