@@ -75,7 +75,6 @@ def createEventRoute():
     description = request.form.get('description', '').strip()
     start_time = request.form.get('start_time', '').strip()
     end_time = request.form.get('end_time', '').strip()
-    candidates = request.form.getlist('candidates[]')
     candidate_descs = request.form.getlist('candidate_descs[]')
     
     # Validation - check in priority order and show only the most important error
@@ -158,7 +157,6 @@ def createEventRoute():
         return redirect('/admin2')
     
     return redirect(url_for('eventList'))
-    # 002 - End of server-side validation additions
 
 @app.route('/eventList')
 def eventList():
@@ -208,7 +206,6 @@ def deleteEvent(event_id):
         return redirect(redirect_url)
     
     # Get current user data
-    user_data = get_user_session_data()
     user_id = session.get('user_id')
     is_admin = session.get('isAdminByID', 0) == 1
     
