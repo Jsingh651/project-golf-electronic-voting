@@ -1,53 +1,14 @@
-from flask import Flask, jsonify, request, flash, url_for, redirect, session, render_template, request
+from flask import Flask, jsonify, flash, url_for, redirect, session, render_template, request
 from flask_app import app
 from flask_app.models.eventsModels import Events
 from flask_app.models.userModels import User
+from flask_app.models.optionModels import Option
 from datetime import datetime
+from flask_app.utils.helpers import require_login, get_current_user, get_user_session_data, is_logged_in
+
 
 # moved compute_status and _parse_datetime to Events model for reuse
 # so other controllers can call it too
-
-def get_user_session_data():
-    """Helper function to get user session data for templates"""
-    logged_in = "user_id" in session
-    user_data = {'logged_in': logged_in}
-    
-    if logged_in:
-        user_id = session["user_id"]
-        user = User.getUserByID({"user_id": user_id})
-        if user:
-            user_data.update({
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'email': user.email,
-                'phone': user.phone,
-                'user_id': user.user_id,
-                'created_at': user.created_at
-            })
-    
-    return user_data
-
-def is_logged_in():
-    return 'user_id' in session
-
-def require_login(redirect_to="/unauthorized"):
-    """Helper function to check if user is logged in"""
-    if "user_id" not in session:
-        if redirect_to == "/login":
-            flash("Please log in to access this page")
-        else:
-            flash("Should you really be here? Please sign in to continue.")
-        return redirect_to
-    
-    user_id = session["user_id"]
-    user = User.getUserByID({"user_id": user_id})
-    if not user:
-        session.clear()
-        flash("Session expired. Please log in again.")
-        return redirect_to
-    
-    return None  # No redirect needed
-
 
 @app.route('/admin2')
 def adminPage():
@@ -66,8 +27,8 @@ def createEventRoute():
     if redirect_url:
         return redirect(redirect_url)
     
-    user = User.getUserByID({'user_id': session['user_id']})
-    print("THIS IS THE ID",session['user_id'])
+    user = get_current_user
+    print("THIS IS THE ID", user.user_id)
     first_name = user.first_name
     
     # Server-side validation
@@ -117,7 +78,7 @@ def createEventRoute():
     
     # Priority 5: Candidates (lower priority)
     else:
-        valid_candidates = [c.strip() for c in candidates if c.strip()]
+        valid_candidates = [c.strip() for c in candidate if c.strip()]
         if len(valid_candidates) < 2:
             error_message = 'Please add at least 2 candidates'
         else:
@@ -160,41 +121,14 @@ def createEventRoute():
 
 @app.route('/eventList')
 def eventList():
+    """Display list of all events, sorted by status and start time"""
     redirect_url = require_login()
     if redirect_url:
         return redirect(redirect_url)
+    
     user_data = get_user_session_data()
-    allEvents = Events.getAllWithCreators()
-    # Compute server-side status for each event so templates have a reliable value
-    for ev in allEvents:
-        try:
-            ev.status = Events.compute_status(ev.start_time, ev.end_time)
-        except Exception:
-            ev.status = 'Unknown'
-    # Sort events so that Open events appear first, then Waiting, then Closed.
-    # Within each status, sort by start_time ascending (earliest first).
-    status_priority = {
-        'Open': 0,
-        'Waiting': 1,
-        'Closed': 2,
-        'Unknown': 3
-    }
-
-    def _safe_parse_start(ev):
-        """Return a datetime for sorting; None becomes far-future to push it to the end."""
-        dt = Events.parse_datetime(ev.start_time)
-        if dt is None:
-            # Use a far-future date so events without start_time appear after dated ones
-            return datetime.max
-        return dt
-
-    # sort by (status priority, start_time)
-    try:
-        allEvents.sort(key=lambda e: (status_priority.get(getattr(e, 'status', 'Unknown'), 3), _safe_parse_start(e)))
-    except Exception:
-        # If something goes wrong with sorting, fallback to the original order
-        pass
-
+    allEvents = Events.getAllWithCreators()  # returns sorted events with status
+    
     return render_template('eventList.html', allEvents=allEvents, **user_data)
 
 
@@ -206,8 +140,7 @@ def deleteEvent(event_id):
         return redirect(redirect_url)
     
     # Get current user data
-    user_id = session.get('user_id')
-    is_admin = session.get('isAdminByID', 0) == 1
+    user = get_current_user()
     
     # Get the event to check ownership
     event = Events.getOne({"event_id": event_id})
@@ -216,7 +149,7 @@ def deleteEvent(event_id):
         return redirect("/events")
     
     # Check if user is the creator or an admin
-    if event.created_byFK != user_id and not is_admin:
+    if event.created_byFK != user.user_id and not (user and user.can_manage_events()):
         flash("You can only delete events that you created.", "error")
         return redirect("/events")
     

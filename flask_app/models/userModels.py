@@ -1,17 +1,18 @@
 from flask_app.config.mysqlconnection import connectToMySQL
-import re, secrets, hashlib
+import secrets, hashlib
 from flask import flash
 from flask_app import app
 from datetime import datetime, timedelta
-
-EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$') 
+from flask_app.utils.validators import (
+    validate_all_registration_fields, validate_email,
+    validate_name, validate_password, validate_phone )
 
 db = "mydb"
 
 class User:
     db = db
     # columns in user table are: user_id, first_name, last_name, email,
-    #                            password, isAdminByID, created_at, phone
+    #                            password, isAdmin, created_at, phone
     
     def __init__(self, data):
         self.user_id = data['user_id']
@@ -21,13 +22,35 @@ class User:
         self.password = data['password']
         self.phone = data['phone']
         self.created_at = data['created_at']
-        self.isAdminByID = int(data.get('isAdminByID', 0)) # always set an int 0/1
-        # FIXME...isAdminByID Default already set to 0 in DB schema? role not on UML
+        self.isAdmin = int(data.get('isAdmin', 0)) # always set an int 0/1
         
     @property
     def is_admin(self) -> bool:
-        return self.isAdminByID == 1
+        return self.isAdmin == 1
 
+    # ===== ROLE-BASED CAPABILITIES =====
+    # These methods define what actions each role can perform
+    # Used for easy to read explicit permission checks, make code + UML consistent
+    
+    def can_cast_vote(self) -> bool:
+        """Only non-admin users (voters) can cast votes
+        Admins are prohibited from voting to maintain integrity"""
+        return not self.is_admin
+    
+    def can_view_events(self) -> bool:
+        """All users can view events"""
+        return True
+
+    def can_manage_events(self) -> bool:
+        """Only admins can create/edit/delete voting events"""
+        return self.is_admin
+    
+    def can_manage_users(self) -> bool:
+        """Only admins can manage user accounts"""
+        return self.is_admin
+
+
+    # ===== CLASS METHODS FOR DB INTERACTIONS =====
     @classmethod
     def register(cls, data):
         query = '''
@@ -39,11 +62,20 @@ class User:
         '''
         return connectToMySQL(db).query_db(query, data)
     
+    # TODO - Registration method for admin users
+    @classmethod
+    def register_admin(cls, data):
+        ...
+    
+    # TODO: Admin methods to promote users
+    # TODO: Admin method to delete users...how would this impact their previous votes?
+    # TODO: Admin should not be able to reset their own password via this method
+
     @classmethod
     def isAdminByID(cls, data):
-        query = "SELECT isAdminByID FROM user WHERE user_id = %(user_id)s;"
+        query = "SELECT isAdmin FROM user WHERE user_id = %(user_id)s;"
         result = connectToMySQL(db).query_db(query, data)
-        return bool(result and result[0].get("isAdminByID") == 1)
+        return bool(result and result[0].get("isAdmin") == 1)
 
     @classmethod
     def getUserByEmail(cls, data):
@@ -70,7 +102,7 @@ class User:
     def getAllUsers(cls):
         # Get all users ordered by creation date descending, w/o password information
         query = """
-        SELECT user_id, first_name, last_name, email, phone, created_at, isAdminByID
+        SELECT user_id, first_name, last_name, email, phone, created_at, isAdmin
         FROM user
         ORDER BY created_at DESC;
         """
@@ -99,6 +131,7 @@ class User:
         """
         return connectToMySQL(db).query_db(query, data)
     
+    # refactor later to simplify/combine with resetPasswordByEmail and use the send_email in userController
     @classmethod
     def sendPasswordResetEmail(cls, data):
         """Check if the email belongs to a registered user; if so, send a reset link."""
@@ -107,8 +140,8 @@ class User:
             # Return generic OK to avoid revealing whether email exists
             return {"ok": True}
 
-        # FIXME: Ask Jang how to create a link/token for password reset
-        # FIXME: Implement actual send_email() function
+        # TODO: Ask Jang how to implement email sending using existing app infrastructure
+        # TODO: use send_email function from userController
         reset_link = f"http://localhost:5000/reset_password?email={data['email']}"
         from flask_app.controllers.userController import send_email
         send_email(
@@ -127,17 +160,27 @@ class User:
             return False
         return cls.updatePassword({'user_id': user.user_id, 'password': data['password']})
 
+
+    # ===== INPUT VALIDATION METHODS ===== 
     @staticmethod
     def validatePassword(password: str) -> bool:
         """Return True if the password meets minimum security requirements."""
-        if not password or len(password) < 8:
-            return False
-        if not re.search(r"[A-Z]", password):
-            return False
-        if not re.search(r"[a-z]", password):
-            return False
-        if not re.search(r"\d", password):
-            return False
-        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
-            return False
-        return True
+        error = validate_password(password)
+        return error is None
+
+    @staticmethod
+    def validateEmail(email: str) -> bool:
+        """return True if the email format is valid."""
+        error = validate_email(email)
+        return error is None
+
+    @staticmethod
+    def validatePhone(phone: str) -> bool:
+        """return True if the phone number format is valid."""
+        error = validate_phone(phone)
+        return error is None
+    
+    # TODO - Static method to validate names (first/last) ?
+    # e.g., non-empty, reasonable length, no invalid characters
+
+    # TODO - Static method to normalize phone number format for storage/display?

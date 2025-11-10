@@ -60,9 +60,18 @@ class Events:
             events.append(cls(i))
         return events
 
+    # Test on render
     @classmethod
     def getAllWithCreators(cls):
-        """Get all events with creator information (first_name, last_name)"""
+        """
+        Get all events with creator information.
+        
+        Returns:
+            List[Event]: Events sorted by status (Open, Waiting, Closed)
+                        then by start_time within each status group.
+                        Each event includes computed status and creator info.
+        """
+        # Get events with creator info
         query = """
         SELECT e.*, u.first_name, u.last_name
         FROM event e
@@ -78,6 +87,39 @@ class Events:
             event.creator_last_name = row.get('last_name', '')
             event.creator_full_name = f"{row.get('first_name', '')} {row.get('last_name', '')}".strip()
             events.append(event)
+        
+        # Compute status for each event
+        for event in events:
+            try:
+                event.status = cls.compute_status(event.start_time, event.end_time)
+            except Exception:
+                event.status = 'Unknown'
+        
+        # Sort by status priority, then by start time
+        status_priority = {
+            'Open': 0,
+            'Waiting': 1,
+            'Closed': 2,
+            'Unknown': 3
+        }
+        
+        def get_sort_key(event):
+            """Generate sort key: (status_priority, start_datetime)"""
+            priority = status_priority.get(event.status, 3)
+            
+            # Parse start time for sorting
+            start_dt = cls.parse_datetime(event.start_time)
+            if start_dt is None:
+                start_dt = datetime.max  # Push invalid dates to end
+            
+            return (priority, start_dt)
+        
+        # Sort events
+        try:
+            events.sort(key=get_sort_key)
+        except Exception:
+            pass  # If sorting fails, return in database order
+        
         return events
 
     @classmethod
@@ -117,16 +159,22 @@ class Events:
         """
         return connectToMySQL(cls.db).query_db(query)
     
+    # TODO - Needs to be tested, Update UML class diagram to show otional limit param
     @classmethod
-    def getAllUpcoming(cls):
+    def getUpcoming(cls, limit=None):
         query = """
         SELECT e.*
         FROM event e
         WHERE e.start_time > NOW()
         ORDER BY e.start_time ASC;
         """
-        return connectToMySQL(cls.db).query_db(query)
-    
+        if limit:
+            query += f" LIMIT {limit}"
+        query += ";"
+
+        result = connectToMySQL(cls.db).query_db(query)
+        return [cls(row) for row in result] if result else []
+
     @classmethod
     def getAllClosed(cls):
         query = """
