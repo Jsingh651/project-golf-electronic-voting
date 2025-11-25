@@ -59,20 +59,21 @@
       ]
     },
     {
-      "name": "Alex",
-      "role": "Backend Developer",
-      "tasks": [
-        "Developed backend logic for Contact page",
-        "Added email server functionality"
-      ]
-    },
-    {
       "name": "Cesar Perez",
       "role": "Analyst",
       "tasks": [
         "Gathered and analyzed project requirements",
         "Validated requirements with the team"
       ]
+    },
+    {
+      "name": "Alex",
+      "role": "Backend Developer",
+      "tasks": [
+        "Developed backend logic for Contact page",
+        "Added email server functionality"
+      ]
     }
+    
   ]
 }

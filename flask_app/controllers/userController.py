@@ -414,15 +414,6 @@ def profile_page():
     
     return render_template('profile.html', **user_data)
 
-@app.route('/settings') # Settings page (unified with profile)
-def settings_page():
-    redirect_url = require_login()
-    if redirect_url:
-        return redirect(redirect_url)
-    
-    user_data = get_user_session_data()
-    # Use unified profile template for both profile and settings
-    return render_template('profile.html', **user_data)
 
 # ================================
 # PROFILE MANAGEMENT ROUTES
@@ -454,7 +445,7 @@ def update_profile():
         flash("Failed to update profile. Please try again.", "error")
         print(f"Profile update error: {e}")
     
-    return redirect("/settings")
+    return redirect("/profile")
 
 @app.route('/change_password', methods=['POST']) # Change password handler
 def change_password():
@@ -472,28 +463,28 @@ def change_password():
     # Validate inputs
     if not current_password or not new_password or not confirm_password:
         flash("All password fields are required", "error")
-        return redirect("/settings")
+        return redirect("/profile")
     
     # Verify current password
     if not bcrypt.check_password_hash(user.password, current_password):
         flash("Current password is incorrect", "error")
-        return redirect("/settings")
+        return redirect("/profile")
     
     # Check if new passwords match
     if new_password != confirm_password:
         flash("New passwords do not match", "error")
-        return redirect("/settings")
+        return redirect("/profile")
     
     # Validate new password strength (detailed message)
     pw_error = validate_password(new_password)
     if pw_error:
         flash(pw_error, "error")
-        return redirect("/settings")
+        return redirect("/profile")
 
     # Disallow using the same password
     if bcrypt.check_password_hash(user.password, new_password):
         flash("New password cannot be the same as your current password.", "error")
-        return redirect("/settings")
+        return redirect("/profile")
     
     # Update password
     try:
@@ -512,4 +503,4 @@ def change_password():
         flash("Failed to update password. Please try again.", "error")
         print(f"Password update error: {e}")
     
-    return redirect("/settings")
+    return redirect("/profile")

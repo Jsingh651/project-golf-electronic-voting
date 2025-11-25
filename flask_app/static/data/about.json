@@ -84,6 +84,19 @@
       "github": "",
       "linkedin": ""
     },
+       {
+      "name": "Cesar Perez",
+      "role": "Analyst",
+      "avatar_url": "",
+      "bio": "Requirements analyst who gathered and validated project needs and constraints.",
+      "education": ["B.S. Computer Science (in progress), CSUS"],
+      "professionalSkills": ["Team collaboration","Documentation","Agile/Scrum methodology"],
+      "technicalSkills": ["Java", "Game development"],
+      "awards": ["Dean’s List – Spring 2025"],
+      "workExperience": ["Volunteer IT Assistant – Community Center","Sales Associate – Under Armour"],
+      "github": "",
+      "linkedin": ""
+    },
     {
       "name": "Alex",
       "role": "Backend Developer",
@@ -94,19 +107,6 @@
       "technicalSkills": ["Python", "Java", "Github"],
       "awards": [],
       "workExperience": [],
-      "github": "",
-      "linkedin": ""
-    },
-    {
-      "name": "Cesar Perez",
-      "role": "Analyst",
-      "avatar_url": "",
-      "bio": "Requirements analyst who gathered and validated project needs and constraints.",
-      "education": ["B.S. Computer Science (in progress), CSUS"],
-      "professionalSkills": ["Team collaboration","Documentation","Agile/Scrum methodology"],
-      "technicalSkills": ["Java", "Game development"],
-      "awards": ["Dean’s List – Spring 2025"],
-      "workExperience": ["Volunteer IT Assistant – Community Center","Sales Associate – Under Armour"],
       "github": "",
       "linkedin": ""
     }
