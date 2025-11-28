@@ -1,0 +1,15 @@
+<div class="p-3 rounded-lg border border-slate-100 bg-slate-50">
+    <h4 class="text-sm font-semibold mb-2">Registered users</h4>
+    {% if not users %}
+        <div class="text-sm text-slate-500">No registered users found.</div>
+    {% else %}
+        <ul class="text-sm text-slate-700 space-y-2">
+            {% for u in users %}
+            <li class="py-2 border-b border-slate-100">
+                <div class="font-medium">{{ u.first_name }} {{ u.last_name }}</div>
+                <div class="text-xs text-slate-500">{{ u.email }}</div>
+            </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>

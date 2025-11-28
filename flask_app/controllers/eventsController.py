@@ -3,6 +3,7 @@ from flask_app import app
 from flask_app.models.eventsModels import Events
 from flask_app.models.optionModels import Option
 from flask_app.models.voteModels import Vote
+from flask_app.models.userModels import User
 from datetime import datetime, timezone
 from flask_app.utils.helpers import require_login, get_current_user, get_user_session_data, is_logged_in
 from flask_app.utils.validators import validate_event_title, validate_event_description, validate_candidate_name
@@ -461,6 +462,48 @@ def singleEvent(event_id):
         is_event_creator=is_event_creator,
         **user_data
     )
+
+
+@app.route('/events/<int:event_id>/users')
+def eventUsers(event_id):
+    """Return a rendered fragment listing all registered users (name + email).
+
+    Only event creators or admins may view the full user list for their event.
+    This returns a small HTML fragment used by the single event page JS.
+    """
+    redirect_url = require_login()
+    if redirect_url:
+        return redirect(redirect_url)
+
+    user = None
+    try:
+        user = get_current_user()
+    except Exception:
+        user = None
+
+    event = Events.getOne({"event_id": event_id})
+    if not event:
+        return ("", 404)
+
+    # Permission: only creator or admin
+    can_view = False
+    if user:
+        try:
+            can_view = (event.created_byFK == getattr(user, 'user_id', None)) or getattr(user, 'can_manage_events', lambda: False)()
+        except Exception:
+            can_view = (event.created_byFK == getattr(user, 'user_id', None))
+
+    if not can_view:
+        return ("", 403)
+
+    users = []
+    try:
+        users = User.getAllUsers() or []
+    except Exception:
+        users = []
+
+    # Render a small fragment listing first_name, last_name, and email
+    return render_template('partials/event_users_fragment.html', users=users)
 
 
 # ==========================
