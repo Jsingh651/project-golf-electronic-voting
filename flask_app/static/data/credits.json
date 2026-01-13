@@ -1,7 +1,7 @@
 {
   "credits": [
     {
-      "name": "Jang Singh",
+      "name": "Derek Lum",
       "role": "Project Manager / Full Stack Developer",
       "tasks": [
         "Managed scheduling and team communication",
@@ -32,7 +32,7 @@
       ]
     },
     {
-      "name": "Derek",
+      "name": "Jang Singh",
       "role": "Database Administrator",
       "tasks": [
         "Set up MySQL server using Aiven",

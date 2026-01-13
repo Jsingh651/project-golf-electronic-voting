@@ -3,9 +3,9 @@
   "intro": "Meet the VoteSmartt team — students and contributors from CSUS and the community building accessible electronic voting tools.",
   "members": [
     {
-      "name": "Jang Singh",
+      "name": "Derek Lum",
       "role": "Project Manager / Full Stack Developer",
-      "avatar_url": "/static/media/jang.jpeg",
+      "avatar_url": "/static/media/derek.png",
       "bio": "Third-year CS major and project lead. Set up the web server, coordinated the team, and implemented core backend and frontend features.",
       "education": [
         "Third-year Computer Science major, CSUS",
@@ -14,8 +14,8 @@
       ],
       "professionalSkills": ["Communication","Problem-solving","Project leadership"],
       "technicalSkills": ["Flask","MERN","Spring","AWS", "HTML/CSS"],
-      "awards": ["100/100 on all three full-stack tracks (bootcamp)"],
-      "workExperience": ["Two software development internships"],
+      "awards": [],
+      "workExperience": ["One software development internship"],
       "github": "",
       "linkedin": ""
     },
@@ -46,15 +46,15 @@
       "linkedin": ""
     },
     {
-      "name": "Derek",
+      "name": "Jang Singh",
       "role": "Database Administrator",
-      "avatar_url": "/static/media/derek.png",
+      "avatar_url": "/static/media/jang.jpeg",
       "bio": "Maintains the shared MySQL development database and handles hosting/availability.",
       "education": ["B.S. Computer Science (in progress), CSUS","Coursework: Database Programming, Systems Programming, Data Structures & Algorithms"],
       "professionalSkills": ["Analytical thinking","Time management","Team collaboration"],
       "technicalSkills": ["MySQL","Python","Database hosting via Aiven"],
       "awards": [],
-      "workExperience": ["Retail Shift Lead","Manufacturing Associate"],
+      "workExperience": ["Two software engineering internships"],
       "github": "",
       "linkedin": ""
     },
