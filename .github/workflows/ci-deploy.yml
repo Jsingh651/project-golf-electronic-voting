@@ -48,6 +48,7 @@ jobs:
           script: |
             cd ~/project-golf-electronic-voting
             git pull origin main
-            # Uses .env on the server (Supabase DB creds + secrets).
-            docker compose -f docker-compose.prod.yml up -d --build
+            # Self-hosted stack: app + postgres on this instance.
+            # Reads SECRET_KEY / JWT_SECRET / DB_PASSWORD from .env on the server.
+            docker compose up -d --build
             docker image prune -f

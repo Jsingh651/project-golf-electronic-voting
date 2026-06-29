@@ -72,38 +72,33 @@ ssh -i your-key.pem ubuntu@YOUR_EC2_IP
 git clone https://github.com/Jsingh651/project-golf-electronic-voting.git
 cd project-golf-electronic-voting
 cp .env.example .env
-nano .env       # set strong SECRET_KEY and JWT_SECRET (see DB options below)
+nano .env
 ```
 
-Pick **one** database backend in `.env`:
-
-**Option A — Supabase (managed Postgres, recommended for production).**
-In the Supabase dashboard: **Project Settings → Database → Connect → "Session
-pooler"**, copy the values, and set in `.env`:
+The database runs as a Postgres container on this same instance, so you only
+need to set three values in `.env` (generate the secrets with
+`python3 -c "import secrets; print(secrets.token_hex(32))"`):
 
 ```
-DB_HOST=aws-0-us-east-1.pooler.supabase.com   # exact host from the dashboard
-DB_PORT=5432
-DB_USER=postgres.<your-project-ref>
-DB_PASSWORD=<your-supabase-db-password>
-DB_NAME=postgres
-DB_SSLMODE=require
+SECRET_KEY=<a long random string>
+JWT_SECRET=<a different long random string>
+DB_PASSWORD=<a strong password for the postgres container>
 ```
 
-Then run the production stack (web only — no local DB container):
+Start the stack (app + its own Postgres; the schema is applied automatically):
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose up -d --build
 curl localhost:8000/healthz     # -> {"status":"ok"}
 ```
 
-**Option B — self-hosted Postgres on the instance** (the bundled container):
+Your app is now at `http://YOUR_EC2_IP:8000`.
 
-```bash
-docker compose up -d --build    # runs app + its own postgres
-```
-
-Either way your app is now at `http://YOUR_EC2_IP:8000`.
+> **Backups (optional).** Data lives in the `pgdata` Docker volume on this
+> instance. For a nightly dump, add a cron entry with `crontab -e`:
+> ```
+> 0 3 * * * cd ~/project-golf-electronic-voting && docker compose exec -T db pg_dump -U voting votingdb | gzip > ~/backup-$(date +\%F).sql.gz
+> ```
 
 ---
 
