@@ -25,9 +25,9 @@ and a containerized deployment pipeline to AWS EC2 via GitHub Actions.
 ## Tech stack
 
 - Backend: Python 3.12, Flask, gunicorn
-- Database: PostgreSQL 16 (`psycopg2`, connection pooling)
+- Database: PostgreSQL (`psycopg2`, connection pooling) — local Docker for dev, **Supabase** managed Postgres in production
 - Auth: PyJWT, Flask-Bcrypt
-- Infra: Docker, docker-compose, GitHub Actions, AWS EC2
+- Infra: Docker, docker-compose, GitHub Actions, AWS EC2, Supabase
 - Testing/Load: pytest, Locust
 
 ## Project structure

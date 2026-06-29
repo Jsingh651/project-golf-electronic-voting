@@ -71,15 +71,39 @@ exit            # log out/in so the docker group applies
 ssh -i your-key.pem ubuntu@YOUR_EC2_IP
 git clone https://github.com/Jsingh651/project-golf-electronic-voting.git
 cd project-golf-electronic-voting
-
 cp .env.example .env
-nano .env       # set strong SECRET_KEY and JWT_SECRET
+nano .env       # set strong SECRET_KEY and JWT_SECRET (see DB options below)
+```
 
-docker compose up -d --build
+Pick **one** database backend in `.env`:
+
+**Option A — Supabase (managed Postgres, recommended for production).**
+In the Supabase dashboard: **Project Settings → Database → Connect → "Session
+pooler"**, copy the values, and set in `.env`:
+
+```
+DB_HOST=aws-0-us-east-1.pooler.supabase.com   # exact host from the dashboard
+DB_PORT=5432
+DB_USER=postgres.<your-project-ref>
+DB_PASSWORD=<your-supabase-db-password>
+DB_NAME=postgres
+DB_SSLMODE=require
+```
+
+Then run the production stack (web only — no local DB container):
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
 curl localhost:8000/healthz     # -> {"status":"ok"}
 ```
 
-Your app is now at `http://YOUR_EC2_IP:8000`.
+**Option B — self-hosted Postgres on the instance** (the bundled container):
+
+```bash
+docker compose up -d --build    # runs app + its own postgres
+```
+
+Either way your app is now at `http://YOUR_EC2_IP:8000`.
 
 ---
 

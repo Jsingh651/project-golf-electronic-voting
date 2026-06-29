@@ -48,5 +48,6 @@ jobs:
           script: |
             cd ~/project-golf-electronic-voting
             git pull origin main
-            docker compose up -d --build
+            # Uses .env on the server (Supabase DB creds + secrets).
+            docker compose -f docker-compose.prod.yml up -d --build
             docker image prune -f
